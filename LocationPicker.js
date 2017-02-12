@@ -85,6 +85,7 @@ class LocationPicker {
 		this.noDistrictsEl.hide();
 		initializeSelect2(this.districtPickerEl, {
 			placeholder: 'Выберите район',
+			minimumInputLength: 0,
 			ajaxUrl: DISTRICTS_API_URL,
 			ajaxDataHandler: (p) => ({
 				city_id: cityId,
@@ -141,10 +142,10 @@ function initializeDialogUI(el) {
 	});
 }
 
-function initializeSelect2(el, {placeholder, ajaxUrl, ajaxDataHandler, disabled = false}) {
+function initializeSelect2(el, {placeholder, ajaxUrl, ajaxDataHandler, minimumInputLength = 1, disabled = false}) {
 	el.select2({
 		placeholder: placeholder,
-		minimumInputLength: 1,
+		minimumInputLength: minimumInputLength,
 		width: '100%',
 		disabled: disabled,
 		language: {

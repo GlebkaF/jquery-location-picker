@@ -1,0 +1,42 @@
+﻿<html>
+	<head>
+		<title> 
+		НГС тест
+		</title>	
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+	</head>
+	  <style>
+	    select {
+	      width: 200px;
+	    }
+		#location-picker {
+			display: none;
+		}
+	    #location-picker > .no-districts, #location-picker > .districts-loading {
+	    	display: none;
+	    }
+  </style>
+<body>	
+<div id='root'>	
+</div>
+	
+<button id='reset'> Сбросить </button>
+
+<br>
+<div id='location-picker' >
+	<select class='city-select'></select>
+	<span class='district-select-wrapper'>
+		<select class='district-select'></select>		
+	</span>		
+	<span class='no-districts'>В этом городе нет районов</span>	
+	<button disabled="true" class='submit-button'>
+		Выбрать
+	</button>
+</div>
+<script type="text/javascript" src='./app.js'></script>
+</body>
+</html>

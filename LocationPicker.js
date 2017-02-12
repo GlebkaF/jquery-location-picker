@@ -1,6 +1,6 @@
 const RUSSIA_ID = 643;
-const CITIES_API_URL = 'http://geo.ngs.ru/api/v1/cities';
-const DISTRICTS_API_URL = 'http://geo.ngs.ru/api/v1/districts';
+const CITIES_API_URL = 'https://geo.ngs.ru/api/v1/cities';
+const DISTRICTS_API_URL = 'https://geo.ngs.ru/api/v1/districts';
 
 class LocationPicker {
 	constructor({

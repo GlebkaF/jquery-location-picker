@@ -3,41 +3,69 @@ const CITIES_API_URL = 'http://geo.ngs.ru/api/v1/cities';
 const DISTRICTS_API_URL = 'http://geo.ngs.ru/api/v1/districts';
 
 class LocationPicker {
-	constructor(handleNewLocation) {
-		this.locationPickerModal = $("#location-picker");		
-		this.cityPickerEl = $("#location-picker > .city-select");
-		this.districtPickerEl = $("#location-picker > .district-select-wrapper > .district-select");
-		this.noDistrictsEl = $("#location-picker > .no-districts");
-		this.submitButton = $("#location-picker > .submit-button");
+	constructor({
+		handleNewLocation = () => {},
+		id = 'location-picker'
+	}) {
+		this.id = id;
+		$('body').append(this.render());
+		this.locationPickerModal = $(`#${this.id}`);
+		this.cityPickerEl = $(`#${this.id} > .select-wrapper >.city-select`);
+		this.districtPickerEl = $(`#${this.id} > .select-wrapper > .district-select`);
+		this.noDistrictsEl = $(`#${this.id} > .no-districts`);
+		this.submitButton = $(`#${this.id} > .location-picker-submit-button`);
 		this.handleNewLocation = handleNewLocation;
-		this.submitButton.prop("disabled", true);
 		initializeDialogUI(this.locationPickerModal);
+		this.setInitialState();
+		this.cityPickerEl.on('change', this.handleCityChange.bind(this));
+		this.districtPickerEl.on('change', this.handleDistrictChange.bind(this));
+		this.submitButton.on('click', this.handleSubmit.bind(this));
+	}
+
+	render() {
+		return `<div id='${this.id}'>
+					<h2> Выбор местоположения:</h2>
+					<div class='select-wrapper'>
+						<select class='city-select'></select>
+					</div>
+					<div class='select-wrapper'>
+						<select class='district-select'></select>
+					</div>
+					<p class='no-districts'>В этом городе нет районов</p>
+					<button disabled='true' class='location-picker-submit-button'>
+						Подтвердить
+					</button>
+				</div>`
+	}
+
+	setInitialState() { 
+		this.city = null;
+		this.district = null;   
+		this.districtPickerEl.parent().show();
+		this.noDistrictsEl.hide();
+		this.cityPickerEl.text('');
+		this.districtPickerEl.text('')  
+		this.submitButton.prop('disabled', true);
+		initializeSelect2(this.districtPickerEl, {
+			placeholder: 'Выберите район',
+			disabled: true
+		});
 		initializeSelect2(this.cityPickerEl, {
 			placeholder: 'Выберите город',
-			ajaxUrl: CITIES_API_URL,		
+			ajaxUrl: CITIES_API_URL,        
 			ajaxDataHandler: (p) => ({
 				country_id: RUSSIA_ID,
 				q: p.term
 			})
 		});
-		initializeSelect2(this.districtPickerEl, {
-			placeholder: 'Выберите район',
-			disabled: true
-		})
-	this.cityPickerEl.on("change", this.handleCityChange.bind(this));
-	this.districtPickerEl.on("change", this.handleDistrictChange.bind(this));
-	this.submitButton.on('click', this.handleSubmit.bind(this));
-	}
-
-	render() {
-		return ``
 	}
 
 	handleCityChange(e) {
+		this.city = $(e.target).select2("data").pop().text;
 		const cityId = $(e.target).val();
-		const districtsUrl = `${DISTRICTS_API_URL}?city_id=${cityId}`;		
-		this.submitButton.prop("disabled", true);
-		this.resetSelectedDictrict();		
+		const districtsUrl = `${DISTRICTS_API_URL}?city_id=${cityId}`;
+		this.submitButton.prop('disabled', true);
+		this.resetSelectedDictrict();
 		fetch(districtsUrl)
 			.then(res => res.json())
 			.then(data => {
@@ -49,7 +77,7 @@ class LocationPicker {
 				}
 			})
 			.then(() => this.showDistrictPicker(cityId))
-			.catch(() => this.showNoDistrictsMessage());	
+			.catch(() => this.showNoDistrictsMessage());
 	}
 
 	showDistrictPicker(cityId) {
@@ -66,66 +94,70 @@ class LocationPicker {
 	}
 
 	resetSelectedDictrict() {
+		this.district = null;
 		this.districtPickerEl.val([]);
-	}	
+	}   
 
 	showNoDistrictsMessage() {
 		this.districtPickerEl.parent().hide();
 		this.noDistrictsEl.show();
-		this.submitButton.prop("disabled", false)
+		this.submitButton.prop('disabled', false)
 	}
 
 	handleDistrictChange(e) {
-		this.submitButton.prop("disabled", false)
+		this.district = $(e.target).select2("data").pop().text;
+		this.submitButton.prop('disabled', false)
 	}
 
-	handleSubmit(){
+	handleSubmit() {
 		this.handleNewLocation({
-			city: this.cityPickerEl.text(),
-			district: this.districtPickerEl.text()	
-		});	
-		this.locationPickerModal.dialog('close');		
+			city: this.city,
+			district: this.district
+		}); 
+		this.locationPickerModal.dialog('close');
+		this.setInitialState();
 	}
 }
 
 function initializeDialogUI(el) {
 	el.dialog({
 			modal: true,
-			autoOpen: false,		
-			 open: function () {
-			 	$('.ui-widget-overlay').bind('click', function() {
-                	el.dialog('close');
-            	})
-		        if ($.ui && $.ui.dialog && !$.ui.dialog.prototype._allowInteractionRemapped && $(this).closest(".ui-dialog").length) {
-		            if ($.ui.dialog.prototype._allowInteraction) {
-		                $.ui.dialog.prototype._allowInteraction = () => true;                
-		                $.ui.dialog.prototype._allowInteractionRemapped = true;
-		            }
-		        }
-		    },
-		    _allowInteraction: function (event) {
-		        return !!$(event.target).is(".select2-input") || this._super(event);
-		    }
+			resizable: false,
+			autoOpen: false,
+			open: function () {
+				$('.ui-widget-overlay').bind('click', function() {
+					el.dialog('close');
+				})
+				if ($.ui && $.ui.dialog && !$.ui.dialog.prototype._allowInteractionRemapped && $(this).closest('.ui-dialog').length) {
+					if ($.ui.dialog.prototype._allowInteraction) {
+						$.ui.dialog.prototype._allowInteraction = () => true;
+						$.ui.dialog.prototype._allowInteractionRemapped = true;
+					}
+				}
+			},
+			_allowInteraction: function (event) {
+				return !!$(event.target).is('.select2-input') || this._super(event);
+			}
 	});
 }
 
 function initializeSelect2(el, {placeholder, ajaxUrl, ajaxDataHandler, disabled = false}) {
-	el.val([]);
 	el.select2({
 		placeholder: placeholder,
 		minimumInputLength: 1,
+		width: '100%',
 		disabled: disabled,
 		language: {
-			inputTooShort: () => "Начните вводить название",
-			searching: () => "Ищем совпадения...",
-			noResults: () => "Совпадений не найдено"
+			inputTooShort: () => 'Начните вводить название',
+			searching: () => 'Ищем совпадения...',
+			noResults: () => 'Совпадений не найдено'
 		},
 		ajax: {
 			url: ajaxUrl,
 			dataType: 'json',
 			delay: 250,
 			data: ajaxDataHandler,
-			processResults: function (data, params) {
+			processResults: function (data) {
 				return {
 					results: data.result.map(item => {
 								return {

@@ -1,0 +1,9 @@
+select {
+  width: 200px;
+}
+#location-picker {
+	display: none;
+}
+#location-picker > .no-districts, #location-picker > .districts-loading {
+	display: none;
+}
